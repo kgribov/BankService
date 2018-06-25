@@ -16,7 +16,7 @@ import java.nio.file.Paths;
 
 public class ApplicationHandler {
 
-    private static final String DOC_URL = "https://app.swaggerhub.com/apis/kirilkadurilka/bank-service/1.0.0#/stats/get_stats";
+    private static final String DOC_URL = "https://app.swaggerhub.com/apis/kirilkadurilka/bank-service/1.0.0";
 
     public static RoutingHandler create() {
         JsonParser parser = new JsonParser();

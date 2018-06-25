@@ -1,0 +1,226 @@
+swagger: "2.0"
+info:
+  description: "This is a simple REST service for online banking: creating accounts, making transfers."
+  version: "1.0.0"
+  title: "BankService"
+  contact:
+    email: "kirilkadurilka@gmail.com"
+host: "bankservice.kgribov.me"
+tags:
+- name: "account"
+  description: "Operations about accounts"
+- name: "transfer"
+  description: "Transfers between accounts"
+- name: "stats"
+  description: "Service's statistic"
+
+schemes:
+- "http"
+paths:
+  /account/{id}:
+    get:
+      tags:
+      - "account"
+      summary: "Find account by ID"
+      description: "Returns an account entity in json format"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of account to return"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Account is returned"
+          schema:
+            $ref: "#/definitions/Account"
+        400:
+          description: "Unable to parse account id"
+        404:
+          description: "Unable to get account by Id"
+
+  /account:
+    post:
+      tags:
+      - "account"
+      summary: "Create new account"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+        - in: body
+          name: Account info
+          description: The account to create.
+          schema:
+            $ref: "#/definitions/CreateAccount"
+      responses:
+        200:
+          description: "Account is created"
+          schema:
+            $ref: "#/definitions/Account"
+        400:
+          description: "Unable to parse account info"
+
+  /transfer/{id}:
+    get:
+      tags:
+      - "transfer"
+      summary: "Find transfer by ID"
+      description: "Returns transfer entity in json format"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of transfer to return"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Transfer is returned"
+          schema:
+            $ref: "#/definitions/Transfer"
+        400:
+          description: "Unable to parse transfer id"
+        404:
+          description: "Unable to get transfer by id"
+
+  /transfer:
+    post:
+      tags:
+      - "transfer"
+      summary: "Create new transfer"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+        - in: body
+          name: Transfer info
+          description: Transfer info
+          schema:
+            $ref: "#/definitions/CreateTransfer"
+      responses:
+        200:
+          description: "Transfer was succeeded"
+          schema:
+            $ref: "#/definitions/Transfer"
+        400:
+          description: "Unable to parse transfer info"
+        404:
+          description: "Unable to find account by id"
+        406:
+          description: "Transfer was rejected by some reason"
+          schema:
+            $ref: "#/definitions/Transfer"
+
+  /stats:
+    get:
+      tags:
+      - "stats"
+      summary: "Service stats"
+      description: "Returns service statistic in json format"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Statistic is returned"
+          schema:
+            $ref: "#/definitions/Stats"
+
+definitions:
+  Account:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      name:
+        type: "string"
+      balance:
+        type: "integer"
+        format: "int32"
+
+  CreateAccount:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      balance:
+        type: "integer"
+        format: "int32"
+
+  CreateTransfer:
+    type: "object"
+    properties:
+      fromId:
+        type: "integer"
+        format: "int64"
+      toId:
+        type: "integer"
+        format: "int64"
+      balance:
+        type: "integer"
+        format: "int32"
+
+  Transfer:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      fromId:
+        type: "integer"
+        format: "int64"
+      toId:
+        type: "integer"
+        format: "int64"
+      balance:
+        type: "integer"
+        format: "int32"
+      timestamp:
+        type: "integer"
+        format: "int64"
+      status:
+        type: "string"
+        description: "Transfer status in bank"
+        enum:
+        - "ACCEPTED"
+        - "REJECTED_BY_SHORT_OF_MONEY"
+        - "REJECTED_BY_OVERFLOW"
+        - "REJECTED_BY_NEGATIVE_AMOUNT"
+  Stats:
+    type: "object"
+    properties:
+      acceptedCount:
+        type: "integer"
+        format: "int64"
+      rejectedByShortOfMoney:
+        type: "integer"
+        format: "int64"
+      rejectedByOverflow:
+        type: "integer"
+        format: "int64"
+      rejectedByNegativeAmount:
+        type: "integer"
+        format: "int64"
+      totalTransfers:
+        type: "integer"
+        format: "int64"
+      transfersCount:
+        type: "integer"
+        format: "int64"
+      accountCount:
+        type: "integer"
+        format: "int64"
+      notFoundAccount:
+        type: "integer"
+        format: "int64"
+      failedAccountUpdate:
+        type: "integer"
+        format: "int64"

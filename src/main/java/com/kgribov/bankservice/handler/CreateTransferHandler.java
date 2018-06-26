@@ -3,7 +3,6 @@ package com.kgribov.bankservice.handler;
 import com.kgribov.bankservice.dto.CreateTransferDTO;
 import com.kgribov.bankservice.json.JsonParser;
 import com.kgribov.bankservice.model.Transfer;
-import com.kgribov.bankservice.repository.AccountNotFoundException;
 import com.kgribov.bankservice.service.TransferService;
 import com.kgribov.bankservice.service.exception.TransferException;
 import io.undertow.server.HttpHandler;

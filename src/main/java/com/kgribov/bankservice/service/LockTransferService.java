@@ -11,7 +11,7 @@ import com.kgribov.bankservice.service.exception.ShortOfMoneyTransferException;
 import com.kgribov.bankservice.service.exception.TransferException;
 
 /**
- * Lock-based implementation of TransferService, based on transaction method of AccountRepository
+ * Lock-based implementation of TransferService, based on lockAndUpdate method of AccountRepository
  */
 public class LockTransferService implements TransferService {
 
@@ -80,7 +80,7 @@ public class LockTransferService implements TransferService {
     }
 
     private boolean outOfLimit(Long newBalance) {
-        return newBalance > Integer.MAX_VALUE;
+        return newBalance > Account.ACCOUNT_MAX_BALANCE;
     }
 
     private boolean notEnoughMoneyForTransfer(Long newBalance) {

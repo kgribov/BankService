@@ -104,7 +104,7 @@ public class LockFreeTransferService implements TransferService {
     }
 
     private boolean outOfLimit(Long newBalance) {
-        return newBalance > Integer.MAX_VALUE;
+        return newBalance > Account.ACCOUNT_MAX_BALANCE;
     }
 
     private boolean notEnoughMoneyForTransfer(Long newBalance) {

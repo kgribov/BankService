@@ -7,13 +7,8 @@ import com.kgribov.bankservice.service.LockFreeTransferService;
 import com.kgribov.bankservice.service.MetricService;
 import com.kgribov.bankservice.service.TransferService;
 import io.undertow.Handlers;
-import io.undertow.server.HttpHandler;
 import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.RedirectHandler;
-
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
 
 public class HttpRouting {
 
@@ -39,14 +34,6 @@ public class HttpRouting {
 
                 .get("/stats", new StatsHandler(metricService, parser))
 
-                .get("/doc", new RedirectHandler(DOC_URL))
-
-                .get("/swagger.yaml", swaggerFile());
-    }
-
-    private static HttpHandler swaggerFile() {
-        Class clazz = HttpRouting.class;
-        String path = clazz.getClassLoader().getResource("swagger/swagger.yaml").getPath();
-        return (exchange) -> exchange.getResponseSender().send(new String(Files.readAllBytes(Paths.get(path))));
+                .get("/doc", new RedirectHandler(DOC_URL));
     }
 }

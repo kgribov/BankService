@@ -4,7 +4,8 @@ import java.util.Objects;
 
 public class Account {
 
-    private final static Integer ACCOUNT_MAX_BALANCE = Integer.MAX_VALUE;
+    // should be configurable
+    public final static Integer ACCOUNT_MAX_BALANCE = Integer.MAX_VALUE;
 
     private final Long id;
     private final String name;

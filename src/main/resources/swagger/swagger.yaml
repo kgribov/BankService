@@ -112,12 +112,8 @@ paths:
             $ref: "#/definitions/Transfer"
         400:
           description: "Unable to parse transfer info"
-        404:
-          description: "Unable to find account by id"
         406:
           description: "Transfer was rejected by some reason"
-          schema:
-            $ref: "#/definitions/Transfer"
 
   /stats:
     get:
@@ -144,7 +140,7 @@ definitions:
         type: "string"
       balance:
         type: "integer"
-        format: "int32"
+        format: "int64"
 
   CreateAccount:
     type: "object"
@@ -180,20 +176,13 @@ definitions:
       toId:
         type: "integer"
         format: "int64"
-      balance:
+      amount:
         type: "integer"
-        format: "int32"
+        format: "int64"
       timestamp:
         type: "integer"
         format: "int64"
-      status:
-        type: "string"
-        description: "Transfer status in bank"
-        enum:
-        - "ACCEPTED"
-        - "REJECTED_BY_SHORT_OF_MONEY"
-        - "REJECTED_BY_OVERFLOW"
-        - "REJECTED_BY_NEGATIVE_AMOUNT"
+
   Stats:
     type: "object"
     properties:

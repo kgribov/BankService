@@ -1,5 +1,6 @@
 package com.kgribov.bankservice.service;
 
+import com.kgribov.bankservice.model.Account;
 import com.kgribov.bankservice.model.Transfer;
 import com.kgribov.bankservice.repository.AccountNotFoundException;
 import com.kgribov.bankservice.repository.AccountRepository;
@@ -91,7 +92,7 @@ public class LockTransferServiceTest {
     @Test(expected = OverflowTransferException.class)
     public void onOverflowShouldReject() throws TransferException {
         Long fromBalance = 1000L;
-        Long toBalance = Integer.valueOf(Integer.MAX_VALUE).longValue();
+        Long toBalance = Account.ACCOUNT_MAX_BALANCE.longValue();
         Integer amount = 100;
 
         AccountRepository accountRepository = createAccountRepo(fromBalance, toBalance);

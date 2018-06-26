@@ -5,8 +5,10 @@ import com.kgribov.bankservice.model.Transfer;
 import com.kgribov.bankservice.repository.AccountNotFoundException;
 import com.kgribov.bankservice.repository.AccountRepository;
 import com.kgribov.bankservice.repository.TransferRepository;
-
-import static com.kgribov.bankservice.model.Transfer.Status.*;
+import com.kgribov.bankservice.service.exception.NegativeAmountTransferException;
+import com.kgribov.bankservice.service.exception.OverflowTransferException;
+import com.kgribov.bankservice.service.exception.ShortOfMoneyTransferException;
+import com.kgribov.bankservice.service.exception.TransferException;
 
 /**
  * Lock free implementation of transfer service, based on updateBalance method of AccountRepository
@@ -32,82 +34,84 @@ public class LockFreeTransferService implements TransferService {
 
     public Transfer transfer(Long fromId,
                              Long toId,
-                             Integer amount) throws AccountNotFoundException {
-
+                             Integer amount) throws TransferException {
         if (amount < 0) {
-            return transferRepository.addTransfer(
-                    fromId, toId, amount, REJECTED_BY_NEGATIVE_AMOUNT
-            );
+            metricService.incrementNegativeAmountTransfers();
+            throw new NegativeAmountTransferException(amount);
         }
 
         Transfer transfer = processTransfer(fromId, toId, amount);
-        metricService.collectTransfer(transfer.getStatus(), transfer.getAmount());
+        metricService.incrementAcceptedTransfers();
         return transfer;
     }
 
-    private Transfer processTransfer(Long fromId, Long toId, Integer amount) throws AccountNotFoundException {
-        if (!chargeAccount(fromId, amount)) {
-            return transferRepository.addTransfer(
-                fromId, toId, amount, REJECTED_BY_SHORT_OF_MONEY
-            );
+    private Transfer processTransfer(Long fromId, Long toId, Integer amount) throws TransferException {
+        updateBalance(fromId, amount, debitUpdater());
+
+        try {
+            updateBalance(toId, amount, creditUpdater());
+
+        } catch (TransferException ex) {
+            updateBalance(fromId, amount, creditUpdater(false));
+            throw ex;
         }
 
-        if (!rechargeAccount(toId, amount)) {
-            rollbackCharge(fromId, amount);
-            return transferRepository.addTransfer(
-                fromId, toId, amount, REJECTED_BY_OVERFLOW
-            );
-        }
-
-        return transferRepository.addTransfer(
-                fromId, toId, amount, ACCEPTED
-        );
+        return transferRepository.addTransfer(fromId, toId, amount);
     }
 
-    private boolean chargeAccount(Long fromId, Integer amount) throws AccountNotFoundException {
-        while (true) {
-            Account from = accountRepository.getAccount(fromId);
-            if (from.getBalance() - amount < 0) {
-                break;
-            } else {
-                int newBalance = from.getBalance() - amount;
-                if (accountRepository.updateBalance(from, newBalance)) {
-                    return true;
-                } else {
-                    metricService.incrementFailedUpdate();
-                }
+    private BalanceUpdater debitUpdater()  {
+        return (account, amount) -> {
+            Long newBalance = account.getBalance() - amount;
+            if (notEnoughMoneyForTransfer(newBalance)) {
+                metricService.incrementShortOfMoneyTransfers();
+                throw new ShortOfMoneyTransferException(account.getId());
             }
-        }
-
-        return false;
+            return newBalance;
+        };
     }
 
-    private boolean rechargeAccount(Long toId, Integer amount) throws AccountNotFoundException {
-        while (true) {
-            Account to = accountRepository.getAccount(toId);
-            if (to.getBalance().longValue() + amount > Integer.MAX_VALUE) {
-                break;
-            } else {
-                int newBalance = to.getBalance() + amount;
+    private BalanceUpdater creditUpdater() {
+        return creditUpdater(true);
+    }
+
+    private BalanceUpdater creditUpdater(boolean checkLimit) {
+        return (account, amount) -> {
+            Long newBalance = account.getBalance() + amount;
+            if (checkLimit && outOfLimit(newBalance)) {
+                metricService.incrementOverflowTransfers();
+                throw new OverflowTransferException(account.getId());
+            }
+            return newBalance;
+        };
+    }
+
+    private void updateBalance(Long id, Integer amount, BalanceUpdater updater) throws TransferException {
+        try {
+            while (true) {
+                Account to = accountRepository.getAccount(id);
+                Long newBalance = updater.updateBalance(to, amount);
+
                 if (accountRepository.updateBalance(to, newBalance)) {
-                    return true;
+                    break;
                 } else {
                     metricService.incrementFailedUpdate();
                 }
             }
-        }
 
-        return false;
+        } catch (AccountNotFoundException ex) {
+            throw new TransferException(ex);
+        }
     }
 
-    private void rollbackCharge(Long accountId, Integer amount) throws AccountNotFoundException {
-        while (true) {
-            Account account = accountRepository.getAccount(accountId);
-            if (!accountRepository.updateBalance(account, account.getBalance() + amount)) {
-                metricService.incrementFailedUpdate();
-            } else {
-                break;
-            }
-        }
+    private boolean outOfLimit(Long newBalance) {
+        return newBalance > Integer.MAX_VALUE;
+    }
+
+    private boolean notEnoughMoneyForTransfer(Long newBalance) {
+        return newBalance < 0;
+    }
+
+    private interface BalanceUpdater {
+        Long updateBalance(Account account, Integer amount) throws TransferException;
     }
 }

@@ -79,7 +79,6 @@ public class ApplicationServerIntegrationTest {
                     .asJson();
 
             assertThat(response.getStatus(), equalTo(200));
-            assertThat(response.getBody().getObject().get("status"), equalTo("ACCEPTED"));
         });
     }
 
@@ -103,13 +102,12 @@ public class ApplicationServerIntegrationTest {
             createAccount("Gates", 1000, address);
 
             String createTransferJson = "{ \"fromId\": 0, \"toId\": 1, \"amount\": 10000}";
-            HttpResponse<JsonNode> response = Unirest
+            HttpResponse<String> response = Unirest
                     .post(toAddress(address, "/transfer"))
                     .body(createTransferJson)
-                    .asJson();
+                    .asString();
 
             assertThat(response.getStatus(), equalTo(406));
-            assertThat(response.getBody().getObject().get("status"), equalTo("REJECTED_BY_SHORT_OF_MONEY"));
         });
     }
 
@@ -122,7 +120,7 @@ public class ApplicationServerIntegrationTest {
                     .body(createTransferJson)
                     .asString();
 
-            assertThat(response.getStatus(), equalTo(404));
+            assertThat(response.getStatus(), equalTo(406));
         });
     }
 

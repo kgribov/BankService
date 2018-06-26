@@ -18,7 +18,7 @@ public class AccountRepository {
      * @param startBalance balance of account
      * @return created account in repo
      */
-    public Account createAccount(String name, Integer startBalance) {
+    public Account createAccount(String name, Long startBalance) {
         Long id = idProvider.getAndIncrement();
         Account account = new Account(id, name, startBalance);
         accounts.put(id, new AtomicReference<>(account));
@@ -41,19 +41,19 @@ public class AccountRepository {
      * Method to update balances of two accounts using lock mechanism.
      * @param fromId id of first account
      * @param toId id of second account
-     * @param transaction object to safely update two accounts and return user specific result
-     * @param <R> result of your transaction
-     * @return user's result based on processed transaction
-     * @throws AccountNotFoundException account not found
+     * @param accountsUpdater object to safely update two accounts and return user specific result
+     * @param <R> result of your accountsUpdater
+     * @return user's result based on processor result
+     * @throws Exception
      */
-    public<R> R transaction(Long fromId, Long toId, Transaction<R> transaction) throws AccountNotFoundException {
+    public<R> R lockAndUpdate(Long fromId, Long toId, AccountsUpdater<R> accountsUpdater) throws Exception {
         synchronized (getReference(Long.max(fromId, toId))) {
             synchronized (getReference(Long.min(fromId, toId))) {
 
                 Account from = getReference(fromId).get();
                 Account to = getReference(toId).get();
 
-                TransactionResult<R> result = transaction.processTransaction(from, to);
+                UpdaterResult<R> result = accountsUpdater.updateAccounts(from, to);
 
                 accounts.get(fromId).set(result.getUpdatedFrom());
                 accounts.get(toId).set(result.getUpdatedTo());
@@ -71,7 +71,7 @@ public class AccountRepository {
      * @return true if update was successful and false if not
      * @throws AccountNotFoundException account with id not found
      */
-    public boolean updateBalance(Account account, Integer newBalance) throws AccountNotFoundException {
+    public boolean updateBalance(Account account, Long newBalance) throws AccountNotFoundException {
         Account newAccount = new Account(account.getId(), account.getName(), newBalance);
 
         AtomicReference<Account> ref = getReference(account.getId());

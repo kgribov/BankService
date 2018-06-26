@@ -3,9 +3,9 @@ package com.kgribov.bankservice.handler;
 import com.kgribov.bankservice.dto.CreateTransferDTO;
 import com.kgribov.bankservice.json.JsonParser;
 import com.kgribov.bankservice.model.Transfer;
-import com.kgribov.bankservice.model.Transfer.Status;
 import com.kgribov.bankservice.repository.AccountNotFoundException;
 import com.kgribov.bankservice.service.TransferService;
+import com.kgribov.bankservice.service.exception.TransferException;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import org.slf4j.Logger;
@@ -39,9 +39,6 @@ public class CreateTransferHandler implements HttpHandler {
                         createTransferDTO.getAmount()
                     );
 
-                    if (transfer.getStatus() != Status.ACCEPTED) {
-                        exchange.setStatusCode(406);
-                    }
                     exchange.getResponseHeaders().put(CONTENT_TYPE, "application/json");
                     exchange.getResponseSender().send(parser.toJson(transfer));
 
@@ -51,9 +48,8 @@ public class CreateTransferHandler implements HttpHandler {
                     exchange.setStatusCode(400);
                     exchange.getResponseSender().send(errorMessage);
 
-                } catch (AccountNotFoundException e) {
-                    logger.error("Unable to get account by Id", e);
-                    exchange.setStatusCode(404);
+                } catch (TransferException e) {
+                    exchange.setStatusCode(406);
                     exchange.getResponseSender().send(e.getMessage());
                 }
             }

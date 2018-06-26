@@ -36,7 +36,7 @@ public class CreateAccountHandler implements HttpHandler {
             try {
                 CreateAccountDTO dto = parser.fromJson(json, CreateAccountDTO.class);
 
-                Account account = repository.createAccount(dto.getName(), dto.getBalance());
+                Account account = repository.createAccount(dto.getName(), dto.getBalance().longValue());
 
                 metricService.incrementAccountCount();
 

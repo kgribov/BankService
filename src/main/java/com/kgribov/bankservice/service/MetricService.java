@@ -1,7 +1,6 @@
 package com.kgribov.bankservice.service;
 
 import com.kgribov.bankservice.model.Stats;
-import com.kgribov.bankservice.model.Transfer;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -21,27 +20,20 @@ public class MetricService {
 
     private final AtomicLong failedAccountUpdate = new AtomicLong();
 
-    public void collectTransfer(Transfer.Status status, Integer amount) {
-        transfersCount.incrementAndGet();
-        collectStatus(status);
-        addAmount(amount);
+    public void incrementAcceptedTransfers() {
+        acceptedCount.incrementAndGet();
     }
 
-    private void collectStatus(Transfer.Status status) {
-        switch (status) {
-            case ACCEPTED:
-                acceptedCount.incrementAndGet();
-                break;
-            case REJECTED_BY_OVERFLOW:
-                rejectedByOverflowCount.incrementAndGet();
-                break;
-            case REJECTED_BY_SHORT_OF_MONEY:
-                rejectedByShortOfMoneyCount.incrementAndGet();
-                break;
-            case REJECTED_BY_NEGATIVE_AMOUNT:
-                rejectedByNegativeAmountCount.incrementAndGet();
-                break;
-        }
+    public void incrementOverflowTransfers() {
+        rejectedByOverflowCount.incrementAndGet();
+    }
+
+    public void incrementShortOfMoneyTransfers() {
+        rejectedByShortOfMoneyCount.incrementAndGet();
+    }
+
+    public void incrementNegativeAmountTransfers() {
+        rejectedByNegativeAmountCount.incrementAndGet();
     }
 
     private void addAmount(Integer amount) {

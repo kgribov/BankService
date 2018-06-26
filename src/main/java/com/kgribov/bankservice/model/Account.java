@@ -4,11 +4,13 @@ import java.util.Objects;
 
 public class Account {
 
+    private final static Integer ACCOUNT_MAX_BALANCE = Integer.MAX_VALUE;
+
     private final Long id;
     private final String name;
-    private final Integer balance;
+    private final Long balance;
 
-    public Account(Long id, String name, Integer balance) {
+    public Account(Long id, String name, Long balance) {
         this.id = id;
         this.name = name;
         this.balance = balance;
@@ -22,7 +24,7 @@ public class Account {
         return name;
     }
 
-    public Integer getBalance() {
+    public Long getBalance() {
         return balance;
     }
 

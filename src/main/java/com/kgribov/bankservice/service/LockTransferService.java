@@ -2,12 +2,13 @@ package com.kgribov.bankservice.service;
 
 import com.kgribov.bankservice.model.Account;
 import com.kgribov.bankservice.model.Transfer;
-import com.kgribov.bankservice.repository.AccountNotFoundException;
 import com.kgribov.bankservice.repository.AccountRepository;
-import com.kgribov.bankservice.repository.TransactionResult;
+import com.kgribov.bankservice.repository.UpdaterResult;
 import com.kgribov.bankservice.repository.TransferRepository;
-
-import static com.kgribov.bankservice.model.Transfer.Status.*;
+import com.kgribov.bankservice.service.exception.NegativeAmountTransferException;
+import com.kgribov.bankservice.service.exception.OverflowTransferException;
+import com.kgribov.bankservice.service.exception.ShortOfMoneyTransferException;
+import com.kgribov.bankservice.service.exception.TransferException;
 
 /**
  * Lock-based implementation of TransferService, based on transaction method of AccountRepository
@@ -32,42 +33,57 @@ public class LockTransferService implements TransferService {
     }
 
     @Override
-    public Transfer transfer(Long fromId, Long toId, Integer amount) throws AccountNotFoundException {
+    public Transfer transfer(Long fromId, Long toId, Integer amount) throws TransferException {
         if (amount < 0) {
-            return transferRepository.addTransfer(
-                fromId, toId, amount, REJECTED_BY_NEGATIVE_AMOUNT
-            );
+            metricService.incrementNegativeAmountTransfers();
+            throw new NegativeAmountTransferException(amount);
         }
 
         Transfer transfer = processTransfer(fromId, toId, amount);
-        metricService.collectTransfer(transfer.getStatus(), transfer.getAmount());
+        metricService.incrementAcceptedTransfers();
         return transfer;
     }
 
-    private Transfer processTransfer(Long fromId, Long toId, Integer amount) throws AccountNotFoundException {
-        return accountRepository.transaction(fromId, toId, (from, to) -> {
-            if (from.getBalance() - amount < 0) {
-                return new TransactionResult<>(
-                    from,
-                    to,
-                    transferRepository.addTransfer(fromId, toId, amount, REJECTED_BY_SHORT_OF_MONEY)
-                );
-            }
-            if (to.getBalance().longValue() + amount > Integer.MAX_VALUE) {
-                return new TransactionResult<>(
-                    from,
-                    to,
-                    transferRepository.addTransfer(fromId, toId, amount, REJECTED_BY_OVERFLOW)
-                );
-            }
+    private Transfer processTransfer(Long fromId, Long toId, Integer amount) throws TransferException {
+        try {
+            Transfer transfer = accountRepository.lockAndUpdate(fromId, toId, (from, to) -> {
+                Long updatedFromBalance = from.getBalance() - amount;
+                Long updatedToBalance = to.getBalance() + amount;
 
-            Account updatedFrom = new Account(fromId, from.getName(), from.getBalance() - amount);
-            Account updatedTo = new Account(toId, to.getName(), to.getBalance() + amount);
-            return new TransactionResult<>(
-                updatedFrom,
-                updatedTo,
-                transferRepository.addTransfer(fromId, toId, amount, ACCEPTED)
-            );
-        });
+                if (notEnoughMoneyForTransfer(updatedFromBalance)) {
+                    metricService.incrementShortOfMoneyTransfers();
+                    throw new ShortOfMoneyTransferException(fromId);
+                }
+
+                if (outOfLimit(updatedToBalance)) {
+                    metricService.incrementOverflowTransfers();
+                    throw new OverflowTransferException(toId);
+                }
+
+                Account updatedFrom = new Account(fromId, from.getName(), updatedFromBalance);
+                Account updatedTo = new Account(toId, to.getName(), updatedToBalance);
+
+                return new UpdaterResult<>(
+                    updatedFrom,
+                    updatedTo,
+                    transferRepository.addTransfer(fromId, toId, amount)
+                );
+            });
+
+            metricService.incrementAcceptedTransfers();
+            return transfer;
+        } catch (TransferException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new TransferException(e);
+        }
+    }
+
+    private boolean outOfLimit(Long newBalance) {
+        return newBalance > Integer.MAX_VALUE;
+    }
+
+    private boolean notEnoughMoneyForTransfer(Long newBalance) {
+        return newBalance < 0;
     }
 }

@@ -4,21 +4,22 @@ import com.kgribov.bankservice.model.Transfer;
 import com.kgribov.bankservice.repository.AccountNotFoundException;
 import com.kgribov.bankservice.repository.AccountRepository;
 import com.kgribov.bankservice.repository.TransferRepository;
+import com.kgribov.bankservice.service.exception.NegativeAmountTransferException;
+import com.kgribov.bankservice.service.exception.OverflowTransferException;
+import com.kgribov.bankservice.service.exception.ShortOfMoneyTransferException;
+import com.kgribov.bankservice.service.exception.TransferException;
 import org.junit.Test;
 
 import java.time.Clock;
 import java.time.Instant;
 
-import static com.kgribov.bankservice.model.Transfer.Status.*;
-import static com.kgribov.bankservice.model.Transfer.Status.ACCEPTED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class LockTransferServiceTest {
-    private final static String ACCOUNT_CHANGED_REASON =
-            "Account should be the same, but it was changed after transfer";
+
     private final static String ACCOUNT_NOT_CHANGED_REASON =
             "Account should be changed, but it wasn't";
 
@@ -26,10 +27,10 @@ public class LockTransferServiceTest {
     private final Long toId = 1L;
     private final Long timestamp = Instant.now().toEpochMilli();
 
-    @Test
-    public void onNegativeAmountShouldReject() throws AccountNotFoundException {
-        Integer fromBalance = 1000;
-        Integer toBalance = 1000;
+    @Test(expected = NegativeAmountTransferException.class)
+    public void onNegativeAmountShouldReject() throws TransferException {
+        Long fromBalance = 1000L;
+        Long toBalance = 1000L;
         Integer amount = -100;
 
         AccountRepository accountRepository = createAccountRepo(fromBalance, toBalance);
@@ -38,29 +39,13 @@ public class LockTransferServiceTest {
                 createTransferRepo(timestamp)
         );
 
-        Transfer transfer = service.transfer(fromId, toId, amount);
-
-        String reason = "Transfer with negative amount should be rejected";
-        Transfer expectedTransfer = transfer(0L, amount, timestamp, REJECTED_BY_NEGATIVE_AMOUNT);
-        assertThat(reason, transfer, equalTo(expectedTransfer));
-
-        assertThat(
-                ACCOUNT_CHANGED_REASON,
-                accountRepository.getAccount(fromId).getBalance(),
-                equalTo(fromBalance)
-        );
-
-        assertThat(
-                ACCOUNT_CHANGED_REASON,
-                accountRepository.getAccount(toId).getBalance(),
-                equalTo(toBalance)
-        );
+        service.transfer(fromId, toId, amount);
     }
 
     @Test
-    public void onPositiveAmountShouldAccept() throws AccountNotFoundException {
-        Integer fromBalance = 1000;
-        Integer toBalance = 1000;
+    public void onPositiveAmountShouldAccept() throws AccountNotFoundException, TransferException {
+        Long fromBalance = 1000L;
+        Long toBalance = 1000L;
         Integer amount = 100;
 
         AccountRepository accountRepository = createAccountRepo(fromBalance, toBalance);
@@ -72,7 +57,7 @@ public class LockTransferServiceTest {
         Transfer transfer = service.transfer(fromId, toId, amount);
 
         String reason = "Transfer with positive amount should be accepted";
-        Transfer expectedTransfer = transfer(0L, amount, timestamp, ACCEPTED);
+        Transfer expectedTransfer = transfer(0L, amount, timestamp);
         assertThat(reason, transfer, equalTo(expectedTransfer));
 
         assertThat(
@@ -88,11 +73,11 @@ public class LockTransferServiceTest {
         );
     }
 
-    @Test
-    public void onShortOfMoneyShouldReject() throws AccountNotFoundException {
-        Integer fromBalance = 1000;
-        Integer toBalance = 1000;
-        Integer amount = fromBalance + 100;
+    @Test(expected = ShortOfMoneyTransferException.class)
+    public void onShortOfMoneyShouldReject() throws TransferException {
+        Long fromBalance = 1000L;
+        Long toBalance = 1000L;
+        Integer amount = fromBalance.intValue() + 100;
 
         AccountRepository accountRepository = createAccountRepo(fromBalance, toBalance);
         TransferService service = new LockTransferService(
@@ -100,29 +85,13 @@ public class LockTransferServiceTest {
                 createTransferRepo(timestamp)
         );
 
-        Transfer transfer = service.transfer(fromId, toId, amount);
-
-        String reason = "If client don't have enough money - transfer should be rejected";
-        Transfer expectedTransfer = transfer(0L, amount, timestamp, REJECTED_BY_SHORT_OF_MONEY);
-        assertThat(reason, transfer, equalTo(expectedTransfer));
-
-        assertThat(
-                ACCOUNT_CHANGED_REASON,
-                accountRepository.getAccount(fromId).getBalance(),
-                equalTo(fromBalance)
-        );
-
-        assertThat(
-                ACCOUNT_CHANGED_REASON,
-                accountRepository.getAccount(toId).getBalance(),
-                equalTo(toBalance)
-        );
+        service.transfer(fromId, toId, amount);
     }
 
-    @Test
-    public void onOverflowShouldReject() throws AccountNotFoundException {
-        Integer fromBalance = 1000;
-        Integer toBalance = Integer.MAX_VALUE;
+    @Test(expected = OverflowTransferException.class)
+    public void onOverflowShouldReject() throws TransferException {
+        Long fromBalance = 1000L;
+        Long toBalance = Integer.valueOf(Integer.MAX_VALUE).longValue();
         Integer amount = 100;
 
         AccountRepository accountRepository = createAccountRepo(fromBalance, toBalance);
@@ -131,31 +100,15 @@ public class LockTransferServiceTest {
                 createTransferRepo(timestamp)
         );
 
-        Transfer transfer = service.transfer(fromId, toId, amount);
-
-        String reason = "If client have too much money on bill - transfer should be rejected";
-        Transfer expectedTransfer = transfer(0L, amount, timestamp, REJECTED_BY_OVERFLOW);
-        assertThat(reason, transfer, equalTo(expectedTransfer));
-
-        assertThat(
-                ACCOUNT_CHANGED_REASON,
-                accountRepository.getAccount(fromId).getBalance(),
-                equalTo(fromBalance)
-        );
-
-        assertThat(
-                ACCOUNT_CHANGED_REASON,
-                accountRepository.getAccount(toId).getBalance(),
-                equalTo(toBalance)
-        );
+        service.transfer(fromId, toId, amount);
     }
 
-    @Test(expected = AccountNotFoundException.class)
-    public void onNotFoundAccountShouldThrow() throws AccountNotFoundException {
+    @Test(expected = TransferException.class)
+    public void onNotFoundAccountShouldThrow() throws TransferException {
         Long notExistAccountId = 3L;
 
-        Integer fromBalance = 1000;
-        Integer toBalance = 100;
+        Long fromBalance = 1000L;
+        Long toBalance = 100L;
         Integer amount = 100;
 
         AccountRepository accountRepository = createAccountRepo(fromBalance, toBalance);
@@ -168,9 +121,9 @@ public class LockTransferServiceTest {
     }
 
     @Test
-    public void secondTransferShouldBeAccepted() throws AccountNotFoundException {
-        Integer fromBalance = 1000;
-        Integer toBalance = 100;
+    public void secondTransferShouldBeAccepted() throws AccountNotFoundException, TransferException {
+        Long fromBalance = 1000L;
+        Long toBalance = 100L;
         Integer firstAmount = 100;
         Integer secondAmount = 200;
 
@@ -185,7 +138,7 @@ public class LockTransferServiceTest {
         Transfer transfer = service.transfer(fromId, toId, secondAmount);
 
         String reason = "If client is making second positive transfer - transfer should be accepted";
-        Transfer expectedTransfer = transfer(1L, secondAmount, timestamp, ACCEPTED);
+        Transfer expectedTransfer = transfer(1L, secondAmount, timestamp);
         assertThat(reason, transfer, equalTo(expectedTransfer));
 
         assertThat(
@@ -201,11 +154,11 @@ public class LockTransferServiceTest {
         );
     }
 
-    private Transfer transfer(Long id, Integer amount, Long timestamp, Transfer.Status status) {
-        return new Transfer(id, fromId, toId, amount, timestamp, status);
+    private Transfer transfer(Long id, Integer amount, Long timestamp) {
+        return new Transfer(id, fromId, toId, amount, timestamp);
     }
 
-    private AccountRepository createAccountRepo(Integer fromBalance, Integer toBalance) {
+    private AccountRepository createAccountRepo(Long fromBalance, Long toBalance) {
         AccountRepository repository = new AccountRepository();
         repository.createAccount("Elon Musk", fromBalance);
         repository.createAccount("Bill Gates", toBalance);

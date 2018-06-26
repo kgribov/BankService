@@ -12,8 +12,8 @@ public class AccountRepositoryTest {
     @Test
     public void onCreateReturnAccountWithNewId() {
         AccountRepository repository = new AccountRepository();
-        Long firstId = repository.createAccount("Bill", 0).getId();
-        Long secondId = repository.createAccount("Gates", 0).getId();
+        Long firstId = repository.createAccount("Bill", 0L).getId();
+        Long secondId = repository.createAccount("Gates", 0L).getId();
 
         assertThat("Repository should create account with different id", firstId, not(secondId));
     }
@@ -22,8 +22,8 @@ public class AccountRepositoryTest {
     public void onGetShouldReturnExistAccount() throws AccountNotFoundException {
         AccountRepository repository = new AccountRepository();
         String accountName = "Bill";
-        Integer accountBalance = 0;
-        Long accountId = repository.createAccount("Bill", 0).getId();
+        Long accountBalance = 0L;
+        Long accountId = repository.createAccount("Bill", 0L).getId();
 
         Account account = repository.getAccount(accountId);
 
@@ -46,9 +46,9 @@ public class AccountRepositoryTest {
     public void onUpdateShouldChangeBalance() throws AccountNotFoundException {
         AccountRepository repository = new AccountRepository();
         String accountName = "Bill";
-        Long accountId = repository.createAccount(accountName, 0).getId();
+        Long accountId = repository.createAccount(accountName, 0L).getId();
 
-        Integer newBalance = 1000;
+        Long newBalance = 1000L;
         repository.updateBalance(repository.getAccount(accountId), newBalance);
 
         assertThat(
@@ -62,14 +62,14 @@ public class AccountRepositoryTest {
     public void onConcurrentUpdateShouldNotChangeBalance() throws AccountNotFoundException {
         AccountRepository repository = new AccountRepository();
         String accountName = "Bill";
-        Long accountId = repository.createAccount(accountName, 0).getId();
+        Long accountId = repository.createAccount(accountName, 0L).getId();
 
         Account account = repository.getAccount(accountId);
 
-        Integer firstChangeBalance = 1000;
+        Long firstChangeBalance = 1000L;
         repository.updateBalance(account, firstChangeBalance);
 
-        Integer secondChangeBalance = 10;
+        Long secondChangeBalance = 10L;
         repository.updateBalance(account, secondChangeBalance);
 
         assertThat(

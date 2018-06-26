@@ -23,13 +23,11 @@ public class TransferRepository {
         this.clock = clock;
     }
 
-    public Transfer addTransfer(Long fromId, Long toId, Integer amount, Transfer.Status status) {
+    public Transfer addTransfer(Long fromId, Long toId, Integer amount) {
         Long timestamp = clock.millis();
         Long transferId = idProvider.getAndIncrement();
 
-        Transfer transfer = new Transfer(
-            transferId, fromId, toId, amount, timestamp, status
-        );
+        Transfer transfer = new Transfer(transferId, fromId, toId, amount, timestamp);
 
         transfers.put(transferId, transfer);
 

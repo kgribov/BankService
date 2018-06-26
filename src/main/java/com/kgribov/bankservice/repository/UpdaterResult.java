@@ -4,13 +4,13 @@ import com.kgribov.bankservice.model.Account;
 
 import java.util.Objects;
 
-public class TransactionResult<R> {
+public class UpdaterResult<R> {
 
     private final Account updatedFrom;
     private final Account updatedTo;
     private final R result;
 
-    public TransactionResult(Account updatedFrom, Account updatedTo, R result) {
+    public UpdaterResult(Account updatedFrom, Account updatedTo, R result) {
         this.updatedFrom = updatedFrom;
         this.updatedTo = updatedTo;
         this.result = result;
@@ -32,7 +32,7 @@ public class TransactionResult<R> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        TransactionResult<?> result1 = (TransactionResult<?>) o;
+        UpdaterResult<?> result1 = (UpdaterResult<?>) o;
         return Objects.equals(updatedFrom, result1.updatedFrom) &&
                 Objects.equals(updatedTo, result1.updatedTo) &&
                 Objects.equals(result, result1.result);
@@ -46,7 +46,7 @@ public class TransactionResult<R> {
 
     @Override
     public String toString() {
-        return "TransactionResult{" +
+        return "UpdaterResult{" +
                 "updatedFrom=" + updatedFrom +
                 ", updatedTo=" + updatedTo +
                 ", result=" + result +

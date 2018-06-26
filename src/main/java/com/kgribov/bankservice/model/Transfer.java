@@ -9,21 +9,18 @@ public class Transfer {
     private final Long to;
     private final Integer amount;
     private final Long timestamp;
-    private final Status status;
 
     public Transfer(Long id,
                     Long fromId,
                     Long to,
                     Integer amount,
-                    Long timestamp,
-                    Status status) {
+                    Long timestamp) {
 
         this.id = id;
         this.fromId = fromId;
         this.to = to;
         this.amount = amount;
         this.timestamp = timestamp;
-        this.status = status;
     }
 
     public Long getId() {
@@ -42,19 +39,8 @@ public class Transfer {
         return amount;
     }
 
-    public Status getStatus() {
-        return status;
-    }
-
     public Long getTimestamp() {
         return timestamp;
-    }
-
-    public enum Status {
-        ACCEPTED,
-        REJECTED_BY_SHORT_OF_MONEY,
-        REJECTED_BY_OVERFLOW,
-        REJECTED_BY_NEGATIVE_AMOUNT
     }
 
     @Override
@@ -66,13 +52,13 @@ public class Transfer {
                 Objects.equals(fromId, transfer.fromId) &&
                 Objects.equals(to, transfer.to) &&
                 Objects.equals(amount, transfer.amount) &&
-                Objects.equals(timestamp, transfer.timestamp) &&
-                status == transfer.status;
+                Objects.equals(timestamp, transfer.timestamp);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, fromId, to, amount, timestamp, status);
+
+        return Objects.hash(id, fromId, to, amount, timestamp);
     }
 
     @Override
@@ -83,7 +69,6 @@ public class Transfer {
                 ", to=" + to +
                 ", amount=" + amount +
                 ", timestamp=" + timestamp +
-                ", status=" + status +
                 '}';
     }
 }

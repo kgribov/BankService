@@ -1,7 +1,7 @@
 package com.kgribov.bankservice.service;
 
 import com.kgribov.bankservice.model.Transfer;
-import com.kgribov.bankservice.repository.AccountNotFoundException;
+import com.kgribov.bankservice.service.exception.TransferException;
 
 public interface TransferService {
 
@@ -11,7 +11,7 @@ public interface TransferService {
      * @param toId account id transfer to
      * @param amount amount of money to transfer
      * @return transfer object (successful or not)
-     * @throws AccountNotFoundException account not found exception
+     * @throws TransferException failed to process transfer
      */
-    Transfer transfer(Long fromId, Long toId, Integer amount) throws AccountNotFoundException;
+    Transfer transfer(Long fromId, Long toId, Integer amount) throws TransferException;
 }

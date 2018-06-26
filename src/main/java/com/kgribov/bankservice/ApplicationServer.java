@@ -1,6 +1,6 @@
 package com.kgribov.bankservice;
 
-import com.kgribov.bankservice.handler.ApplicationHandler;
+import com.kgribov.bankservice.handler.HttpRouting;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
@@ -31,7 +31,7 @@ public class ApplicationServer {
     }
 
     private Undertow createServer(int port, String host) {
-        RoutingHandler appHandler = ApplicationHandler.create();
+        RoutingHandler appHandler = HttpRouting.createRouting();
 
         HttpHandler limitedHandler = Handlers.requestLimitingHandler(
                 50_000,

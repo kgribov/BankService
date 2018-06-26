@@ -33,7 +33,7 @@ public class LockFreeTransferServiceTest {
         Integer amount = -100;
 
         AccountRepository accountRepository = createAccountRepo(fromBalance, toBalance);
-        TransferService service = new FreeLockTransferService(
+        TransferService service = new LockFreeTransferService(
             accountRepository,
             createTransferRepo(timestamp)
         );
@@ -64,7 +64,7 @@ public class LockFreeTransferServiceTest {
         Integer amount = 100;
 
         AccountRepository accountRepository = createAccountRepo(fromBalance, toBalance);
-        TransferService service = new FreeLockTransferService(
+        TransferService service = new LockFreeTransferService(
             accountRepository,
             createTransferRepo(timestamp)
         );
@@ -95,7 +95,7 @@ public class LockFreeTransferServiceTest {
         Integer amount = fromBalance + 100;
 
         AccountRepository accountRepository = createAccountRepo(fromBalance, toBalance);
-        TransferService service = new FreeLockTransferService(
+        TransferService service = new LockFreeTransferService(
             accountRepository,
             createTransferRepo(timestamp)
         );
@@ -126,7 +126,7 @@ public class LockFreeTransferServiceTest {
         Integer amount = 100;
 
         AccountRepository accountRepository = createAccountRepo(fromBalance, toBalance);
-        TransferService service = new FreeLockTransferService(
+        TransferService service = new LockFreeTransferService(
             accountRepository,
             createTransferRepo(timestamp)
         );
@@ -159,7 +159,7 @@ public class LockFreeTransferServiceTest {
         Integer amount = 100;
 
         AccountRepository accountRepository = createAccountRepo(fromBalance, toBalance);
-        TransferService service = new FreeLockTransferService(
+        TransferService service = new LockFreeTransferService(
             accountRepository,
             createTransferRepo(timestamp)
         );
@@ -175,7 +175,7 @@ public class LockFreeTransferServiceTest {
         Integer secondAmount = 200;
 
         AccountRepository accountRepository = createAccountRepo(fromBalance, toBalance);
-        TransferService service = new FreeLockTransferService(
+        TransferService service = new LockFreeTransferService(
             accountRepository,
             createTransferRepo(timestamp)
         );

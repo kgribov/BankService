@@ -11,18 +11,18 @@ import static com.kgribov.bankservice.model.Transfer.Status.*;
 /**
  * Lock free implementation of transfer service, based on updateBalance method of AccountRepository
  */
-public class FreeLockTransferService implements TransferService {
+public class LockFreeTransferService implements TransferService {
 
     private final AccountRepository accountRepository;
     private final TransferRepository transferRepository;
     private final MetricService metricService;
 
-    public FreeLockTransferService(AccountRepository accountRepository,
+    public LockFreeTransferService(AccountRepository accountRepository,
                                    TransferRepository transferRepository) {
         this(accountRepository, transferRepository, new MetricService());
     }
 
-    public FreeLockTransferService(AccountRepository accountRepository,
+    public LockFreeTransferService(AccountRepository accountRepository,
                                    TransferRepository transferRepository,
                                    MetricService metricService) {
         this.accountRepository = accountRepository;

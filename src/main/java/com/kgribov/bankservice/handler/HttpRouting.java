@@ -3,7 +3,7 @@ package com.kgribov.bankservice.handler;
 import com.kgribov.bankservice.json.JsonParser;
 import com.kgribov.bankservice.repository.AccountRepository;
 import com.kgribov.bankservice.repository.TransferRepository;
-import com.kgribov.bankservice.service.FreeLockTransferService;
+import com.kgribov.bankservice.service.LockFreeTransferService;
 import com.kgribov.bankservice.service.MetricService;
 import com.kgribov.bankservice.service.TransferService;
 import io.undertow.Handlers;
@@ -15,18 +15,18 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 
-public class ApplicationHandler {
+public class HttpRouting {
 
     private static final String DOC_URL = "https://app.swaggerhub.com/apis/kirilkadurilka/bank-service/1.0.0";
 
-    public static RoutingHandler create() {
+    public static RoutingHandler createRouting() {
         JsonParser parser = new JsonParser();
         MetricService metricService = new MetricService();
 
         AccountRepository accountRepository = new AccountRepository();
         TransferRepository transferRepository = new TransferRepository();
 
-        TransferService transferService = new FreeLockTransferService(accountRepository, transferRepository, metricService);
+        TransferService transferService = new LockFreeTransferService(accountRepository, transferRepository, metricService);
 
         return Handlers.routing()
                 .get("/account/{id}", new AccountHandler(accountRepository, metricService, parser))
@@ -45,7 +45,7 @@ public class ApplicationHandler {
     }
 
     private static HttpHandler swaggerFile() {
-        Class clazz = ApplicationHandler.class;
+        Class clazz = HttpRouting.class;
         String path = clazz.getClassLoader().getResource("swagger/swagger.yaml").getPath();
         return (exchange) -> exchange.getResponseSender().send(new String(Files.readAllBytes(Paths.get(path))));
     }

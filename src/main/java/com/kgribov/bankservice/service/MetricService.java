@@ -45,12 +45,7 @@ public class MetricService {
     }
 
     private void addAmount(Integer amount) {
-        Long amountsSum = totalTransfersAmounts.get();
-        Long newSum = amountsSum + amount;
-        boolean updated = totalTransfersAmounts.compareAndSet(amountsSum, newSum);
-        if (! updated) {
-            addAmount(amount);
-        }
+        totalTransfersAmounts.addAndGet(amount);
     }
 
     public void incrementAccountCount() {

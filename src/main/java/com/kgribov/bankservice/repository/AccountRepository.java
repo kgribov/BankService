@@ -12,6 +12,12 @@ public class AccountRepository {
     private final AtomicLong idProvider = new AtomicLong();
     private final Map<Long, AtomicReference<Account>> accounts = new ConcurrentHashMap<>(10_000);
 
+    /**
+     * Create new account in repository
+     * @param name account's name
+     * @param startBalance balance of account
+     * @return created account in repo
+     */
     public Account createAccount(String name, Integer startBalance) {
         Long id = idProvider.getAndIncrement();
         Account account = new Account(id, name, startBalance);
@@ -20,21 +26,63 @@ public class AccountRepository {
         return account;
     }
 
+    /**
+     * Returns account by id number
+     * @param id account id
+     * @return Account by id
+     * @throws AccountNotFoundException account not found
+     */
     public Account getAccount(Long id) throws AccountNotFoundException {
-        AtomicReference<Account> account = accounts.get(id);
-        if (account == null) {
-            throw new AccountNotFoundException(id);
-        }
+        AtomicReference<Account> account = getReference(id);
         return account.get();
     }
 
-    public boolean updateBalance(Account account, Integer newBalance) throws AccountNotFoundException {
-        if (!accounts.containsKey(account.getId())) {
-            throw new AccountNotFoundException(account.getId());
+    /**
+     * Method to update balances of two accounts using lock mechanism.
+     * @param fromId id of first account
+     * @param toId id of second account
+     * @param transaction object to safely update two accounts and return user specific result
+     * @param <R> result of your transaction
+     * @return user's result based on processed transaction
+     * @throws AccountNotFoundException account not found
+     */
+    public<R> R transaction(Long fromId, Long toId, Transaction<R> transaction) throws AccountNotFoundException {
+        synchronized (getReference(Long.max(fromId, toId))) {
+            synchronized (getReference(Long.min(fromId, toId))) {
+
+                Account from = getReference(fromId).get();
+                Account to = getReference(toId).get();
+
+                TransactionResult<R> result = transaction.processTransaction(from, to);
+
+                accounts.get(fromId).set(result.getUpdatedFrom());
+                accounts.get(toId).set(result.getUpdatedTo());
+
+                return result.getResult();
+            }
         }
+    }
+
+    /**
+     * Method to update balance of some account without blocking.
+     * If someone changed account before your update, updateBalance will return false.
+     * @param account account to update
+     * @param newBalance new balance will be set
+     * @return true if update was successful and false if not
+     * @throws AccountNotFoundException account with id not found
+     */
+    public boolean updateBalance(Account account, Integer newBalance) throws AccountNotFoundException {
         Account newAccount = new Account(account.getId(), account.getName(), newBalance);
 
-        AtomicReference<Account> ref = accounts.get(account.getId());
+        AtomicReference<Account> ref = getReference(account.getId());
         return ref.compareAndSet(account, newAccount);
+    }
+
+    private AtomicReference<Account> getReference(Long id) throws AccountNotFoundException {
+        AtomicReference<Account> accountRef = accounts.get(id);
+        if (accountRef == null) {
+            throw new AccountNotFoundException(id);
+        }
+        return accountRef;
     }
 }

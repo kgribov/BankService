@@ -15,7 +15,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class TransferServiceTest {
+public class LockFreeTransferServiceTest {
 
     private final static String ACCOUNT_CHANGED_REASON =
             "Account should be the same, but it was changed after transfer";
@@ -33,7 +33,7 @@ public class TransferServiceTest {
         Integer amount = -100;
 
         AccountRepository accountRepository = createAccountRepo(fromBalance, toBalance);
-        TransferService service = new TransferService(
+        TransferService service = new FreeLockTransferService(
             accountRepository,
             createTransferRepo(timestamp)
         );
@@ -64,7 +64,7 @@ public class TransferServiceTest {
         Integer amount = 100;
 
         AccountRepository accountRepository = createAccountRepo(fromBalance, toBalance);
-        TransferService service = new TransferService(
+        TransferService service = new FreeLockTransferService(
             accountRepository,
             createTransferRepo(timestamp)
         );
@@ -95,7 +95,7 @@ public class TransferServiceTest {
         Integer amount = fromBalance + 100;
 
         AccountRepository accountRepository = createAccountRepo(fromBalance, toBalance);
-        TransferService service = new TransferService(
+        TransferService service = new FreeLockTransferService(
             accountRepository,
             createTransferRepo(timestamp)
         );
@@ -126,7 +126,7 @@ public class TransferServiceTest {
         Integer amount = 100;
 
         AccountRepository accountRepository = createAccountRepo(fromBalance, toBalance);
-        TransferService service = new TransferService(
+        TransferService service = new FreeLockTransferService(
             accountRepository,
             createTransferRepo(timestamp)
         );
@@ -159,7 +159,7 @@ public class TransferServiceTest {
         Integer amount = 100;
 
         AccountRepository accountRepository = createAccountRepo(fromBalance, toBalance);
-        TransferService service = new TransferService(
+        TransferService service = new FreeLockTransferService(
             accountRepository,
             createTransferRepo(timestamp)
         );
@@ -175,7 +175,7 @@ public class TransferServiceTest {
         Integer secondAmount = 200;
 
         AccountRepository accountRepository = createAccountRepo(fromBalance, toBalance);
-        TransferService service = new TransferService(
+        TransferService service = new FreeLockTransferService(
             accountRepository,
             createTransferRepo(timestamp)
         );

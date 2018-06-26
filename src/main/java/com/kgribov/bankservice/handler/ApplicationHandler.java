@@ -3,6 +3,7 @@ package com.kgribov.bankservice.handler;
 import com.kgribov.bankservice.json.JsonParser;
 import com.kgribov.bankservice.repository.AccountRepository;
 import com.kgribov.bankservice.repository.TransferRepository;
+import com.kgribov.bankservice.service.FreeLockTransferService;
 import com.kgribov.bankservice.service.MetricService;
 import com.kgribov.bankservice.service.TransferService;
 import io.undertow.Handlers;
@@ -25,7 +26,7 @@ public class ApplicationHandler {
         AccountRepository accountRepository = new AccountRepository();
         TransferRepository transferRepository = new TransferRepository();
 
-        TransferService transferService = new TransferService(accountRepository, transferRepository, metricService);
+        TransferService transferService = new FreeLockTransferService(accountRepository, transferRepository, metricService);
 
         return Handlers.routing()
                 .get("/account/{id}", new AccountHandler(accountRepository, metricService, parser))

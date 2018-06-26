@@ -5,6 +5,7 @@ import com.kgribov.bankservice.json.JsonParser;
 import com.kgribov.bankservice.model.Transfer;
 import com.kgribov.bankservice.model.Transfer.Status;
 import com.kgribov.bankservice.repository.AccountNotFoundException;
+import com.kgribov.bankservice.service.FreeLockTransferService;
 import com.kgribov.bankservice.service.TransferService;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;

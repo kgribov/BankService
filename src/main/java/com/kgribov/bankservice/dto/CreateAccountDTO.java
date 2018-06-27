@@ -1,6 +1,7 @@
 package com.kgribov.bankservice.dto;
 
-import java.util.Objects;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class CreateAccountDTO {
 
@@ -23,16 +24,23 @@ public class CreateAccountDTO {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
+
         if (o == null || getClass() != o.getClass()) return false;
-        CreateAccountDTO dto = (CreateAccountDTO) o;
-        return Objects.equals(name, dto.name) &&
-                Objects.equals(balance, dto.balance);
+
+        CreateAccountDTO that = (CreateAccountDTO) o;
+
+        return new EqualsBuilder()
+                .append(name, that.name)
+                .append(balance, that.balance)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-
-        return Objects.hash(name, balance);
+        return new HashCodeBuilder(17, 37)
+                .append(name)
+                .append(balance)
+                .toHashCode();
     }
 
     @Override

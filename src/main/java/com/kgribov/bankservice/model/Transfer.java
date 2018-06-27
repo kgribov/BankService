@@ -1,6 +1,7 @@
 package com.kgribov.bankservice.model;
 
-import java.util.Objects;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class Transfer {
 
@@ -46,19 +47,29 @@ public class Transfer {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
+
         if (o == null || getClass() != o.getClass()) return false;
+
         Transfer transfer = (Transfer) o;
-        return Objects.equals(id, transfer.id) &&
-                Objects.equals(fromId, transfer.fromId) &&
-                Objects.equals(to, transfer.to) &&
-                Objects.equals(amount, transfer.amount) &&
-                Objects.equals(timestamp, transfer.timestamp);
+
+        return new EqualsBuilder()
+                .append(id, transfer.id)
+                .append(fromId, transfer.fromId)
+                .append(to, transfer.to)
+                .append(amount, transfer.amount)
+                .append(timestamp, transfer.timestamp)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-
-        return Objects.hash(id, fromId, to, amount, timestamp);
+        return new HashCodeBuilder(17, 37)
+                .append(id)
+                .append(fromId)
+                .append(to)
+                .append(amount)
+                .append(timestamp)
+                .toHashCode();
     }
 
     @Override

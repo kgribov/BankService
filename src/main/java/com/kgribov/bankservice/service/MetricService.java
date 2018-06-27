@@ -23,6 +23,7 @@ public class MetricService {
     public void incrementAcceptedTransfers(Integer amount) {
         acceptedCount.incrementAndGet();
         totalTransfersAmounts.addAndGet(amount);
+        transfersCount.incrementAndGet();
     }
 
     public void incrementOverflowTransfers() {

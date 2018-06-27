@@ -67,6 +67,22 @@ public class ApplicationServerIntegrationTest {
     }
 
     @Test
+    public void onGetAccountShouldReturnAccountJson() throws Exception {
+        testOnServer(address -> {
+            createAccount("Bill", 100, address);
+
+            String accountId = "0";
+            HttpResponse<String> response = Unirest
+                    .get(toAddress(address, "/account/" + accountId))
+                    .asString();
+
+            String expectedJson = "{\"id\":0,\"name\":\"Bill\",\"balance\":100}";
+            assertThat(response.getStatus(), equalTo(200));
+            assertThat(response.getBody(), equalTo(expectedJson));
+        });
+    }
+
+    @Test
     public void onCreateNewTransferShouldReturnTransferJson() throws Exception {
         testOnServer(address -> {
             createAccount("Bill", 1000, address);
@@ -79,6 +95,11 @@ public class ApplicationServerIntegrationTest {
                     .asJson();
 
             assertThat(response.getStatus(), equalTo(200));
+
+            assertThat(response.getBody().getObject().get("id"), equalTo(0));
+            assertThat(response.getBody().getObject().get("amount"), equalTo(1));
+            assertThat(response.getBody().getObject().get("fromId"), equalTo(0));
+            assertThat(response.getBody().getObject().get("toId"), equalTo(1));
         });
     }
 

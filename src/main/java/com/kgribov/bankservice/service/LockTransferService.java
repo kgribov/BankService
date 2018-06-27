@@ -40,7 +40,7 @@ public class LockTransferService implements TransferService {
         }
 
         Transfer transfer = processTransfer(fromId, toId, amount);
-        metricService.incrementAcceptedTransfers();
+        metricService.incrementAcceptedTransfers(transfer.getAmount());
         return transfer;
     }
 
@@ -70,7 +70,6 @@ public class LockTransferService implements TransferService {
                 );
             });
 
-            metricService.incrementAcceptedTransfers();
             return transfer;
         } catch (TransferException e) {
             throw e;

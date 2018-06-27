@@ -38,11 +38,10 @@ public class TransferHandler implements HttpHandler {
             if (transfer.isPresent()) {
                 exchange.getResponseHeaders().put(CONTENT_TYPE, "application/json");
                 exchange.getResponseSender().send(parser.toJson(transfer.get()));
-                logger.debug("New transfer - " + transfer);
 
             } else {
                 String message = "Unable to get transfer with id=[" + transferId + "]";
-                logger.debug(message);
+                logger.error(message);
 
                 exchange.setStatusCode(404);
                 exchange.getResponseSender().send(message);

@@ -3,6 +3,12 @@ package com.kgribov.bankservice.service;
 import com.kgribov.bankservice.model.Transfer;
 import com.kgribov.bankservice.service.exception.TransferException;
 
+/**
+ * A service for money transfers between account.
+ * There are two implementations:
+ * 1) LockTransferService - based on synchronized methods in lockAndUpdate method of AccountRepository class
+ * 2) LockFreeTransferService - based on AtomicReference and CAS operation in updateBalance method
+ */
 public interface TransferService {
 
     /**

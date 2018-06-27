@@ -41,7 +41,7 @@ public class LockFreeTransferService implements TransferService {
         }
 
         Transfer transfer = processTransfer(fromId, toId, amount);
-        metricService.incrementAcceptedTransfers();
+        metricService.incrementAcceptedTransfers(transfer.getAmount());
         return transfer;
     }
 
@@ -88,10 +88,10 @@ public class LockFreeTransferService implements TransferService {
     private void updateBalance(Long id, Integer amount, BalanceUpdater updater) throws TransferException {
         try {
             while (true) {
-                Account to = accountRepository.getAccount(id);
-                Long newBalance = updater.updateBalance(to, amount);
+                Account account = accountRepository.getAccount(id);
+                Long newBalance = updater.updateBalance(account, amount);
 
-                if (accountRepository.updateBalance(to, newBalance)) {
+                if (accountRepository.updateBalance(account, newBalance)) {
                     break;
                 } else {
                     metricService.incrementFailedUpdate();

@@ -160,7 +160,7 @@ definitions:
       toId:
         type: "integer"
         format: "int64"
-      balance:
+      amount:
         type: "integer"
         format: "int32"
 

@@ -20,8 +20,9 @@ public class MetricService {
 
     private final AtomicLong failedAccountUpdate = new AtomicLong();
 
-    public void incrementAcceptedTransfers() {
+    public void incrementAcceptedTransfers(Integer amount) {
         acceptedCount.incrementAndGet();
+        totalTransfersAmounts.addAndGet(amount);
     }
 
     public void incrementOverflowTransfers() {
@@ -34,10 +35,6 @@ public class MetricService {
 
     public void incrementNegativeAmountTransfers() {
         rejectedByNegativeAmountCount.incrementAndGet();
-    }
-
-    private void addAmount(Integer amount) {
-        totalTransfersAmounts.addAndGet(amount);
     }
 
     public void incrementAccountCount() {

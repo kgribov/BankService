@@ -44,7 +44,7 @@ public class AccountRepository {
      * @param accountsUpdater object to safely update two accounts and return user specific result
      * @param <R> result of your accountsUpdater
      * @return user's result based on processor result
-     * @throws Exception
+     * @throws Exception which could throw user's updater
      */
     public<R> R lockAndUpdate(Long fromId, Long toId, AccountsUpdater<R> accountsUpdater) throws Exception {
         synchronized (getReference(Long.max(fromId, toId))) {

@@ -48,6 +48,7 @@ public class CreateTransferHandler implements HttpHandler {
                     exchange.getResponseSender().send(errorMessage);
 
                 } catch (TransferException e) {
+                    logger.error("Unable to create transfer", e);
                     exchange.setStatusCode(406);
                     exchange.getResponseSender().send(e.getMessage());
                 }
